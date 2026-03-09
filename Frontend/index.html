@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Asistente de vestimenta por clima</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+  <div class="container">
+    <h1>Asistente de vestimenta por clima</h1>
+
+    <div class="form">
+      <input 
+        type="text"
+        id="cityInput"
+        placeholder="Escribe una ciudad"
+      >
+      <button onclick="consultWeather()">Consultar</button>
+    </div>
+
+    <div id="result" class="result hidden">
+      <h2 id="city"></h2>
+      <p id="temperature"></p>
+      <p id="condition"></p>
+      <p id="recommendation"></p>
+    </div>
+
+  </div>
+
+  <script src="script.js"></script>
+
+</body>
+</html>
