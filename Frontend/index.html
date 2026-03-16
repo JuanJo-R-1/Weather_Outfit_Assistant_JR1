@@ -3,30 +3,51 @@
 <head>
   <meta charset="UTF-8">
   <title>Asistente de vestimenta por clima</title>
-  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-  <div class="container">
-    <h1>Asistente de vestimenta por clima</h1>
+  <main class="page">
+    <header class="page__header">
+      <h1>Asistente de vestimenta</h1>
+      <p class="subtitle">Ingresa una ciudad y te digo qué ponerte</p>
+    </header>
 
-    <div class="form">
-      <input 
-        type="text"
-        id="cityInput"
-        placeholder="Escribe una ciudad"
-      >
-      <button onclick="consultWeather()">Consultar</button>
-    </div>
+    <section class="card">
+      <form class="search" onsubmit="event.preventDefault(); consultWeather();">
+        <input
+          id="cityInput"
+          type="text"
+          placeholder="Escribe una ciudad"
+          autocomplete="off"
+        />
+        <button type="submit">Consultar</button>
+      </form>
 
-    <div id="result" class="result hidden">
-      <h2 id="city"></h2>
-      <p id="temperature"></p>
-      <p id="condition"></p>
-      <p id="recommendation"></p>
-    </div>
+      <section id="result" class="weather hidden">
+        <div class="weather__header">
+          <div>
+            <h2 id="city" class="weather__city"></h2>
+            <p id="updated" class="weather__updated"></p>
+          </div>
+          <div class="weather__icon" id="weatherIcon">☀️</div>
+        </div>
 
-  </div>
+        <div class="weather__main">
+          <div class="weather__temperature" id="temperature">--°C</div>
+          <div class="weather__condition" id="condition">--</div>
+        </div>
+
+        <div class="weather__details">
+          <p id="recommendation" class="weather__recommendation"></p>
+        </div>
+
+        <div id="status" class="status hidden"></div>
+      </section>
+
+      <div id="error" class="alert hidden"></div>
+    </section>
+  </main>
 
   <script src="script.js"></script>
 

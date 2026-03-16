@@ -1,57 +1,95 @@
-**Opción recomendada**
+# Weather Outfit Assistant API Specification
 
-Usar n8n como orquestador central.
+## Overview
+The Weather Outfit Assistant API provides endpoints for getting weather-based outfit recommendations and retrieving query history. The API integrates with an MCP server that fetches real-time weather data from OpenWeather API.
 
-**Nodos sugeridos**
+## Base URL
+```
+http://localhost:3002
+```
 
-**1. Webhook**
+## Endpoints
 
-- Recibe `city`
+### POST /api/weather-outfit
+Get weather information and outfit recommendation for a specified city.
 
-**2. HTTP Request**
+**Request Body:**
+```json
+{
+  "city": "string"
+}
+```
 
-- Consulta la API meteorológica
-- Ejemplo:
-  - OpenWeatherMap
-  - WeatherAPI
+**Response (200 OK):**
+```json
+{
+  "city": "string",
+  "temperature": number,
+  "condition": "string",
+  "recommendation": "string"
+}
+```
 
-**3. Function / Code**
+**Error Responses:**
+- 400 Bad Request: Invalid city name
+- 500 Internal Server Error: MCP server or external API error
 
-- Extrae:
-  - temperatura
-  - clima
-  - sensación térmica
-- Aplica reglas de recomendación
+**Example Request:**
+```bash
+curl -X POST http://localhost:3002/api/weather-outfit \
+  -H "Content-Type: application/json" \
+  -d '{"city": "London"}'
+```
 
-**4. MySQL**
+**Example Response:**
+```json
+{
+  "city": "London",
+  "temperature": 15,
+  "condition": "Cloudy",
+  "recommendation": "Wear a light jacket and comfortable pants"
+}
+```
 
-- Inserta el registro en la base de datos
+### GET /api/history
+Retrieve the history of weather queries.
 
-**5. Respond to Webhook**
+**Response (200 OK):**
+```json
+[
+  {
+    "id": number,
+    "city": "string",
+    "temperature": number,
+    "condition": "string",
+    "recommendation": "string",
+    "timestamp": "string (ISO 8601)"
+  }
+]
+```
 
-- Devuelve JSON al frontend
+**Example Request:**
+```bash
+curl http://localhost:3002/api/history
+```
 
-## 
+**Example Response:**
+```json
+[
+  {
+    "id": 1,
+    "city": "London",
+    "temperature": 15,
+    "condition": "Cloudy",
+    "recommendation": "Wear a light jacket and comfortable pants",
+    "timestamp": "2023-10-01T12:00:00Z"
+  }
+]
+```
 
-Para el desarrollo del proyecto se utilizará una metodología incremental que permita construir y probar cada componente del sistema de manera progresiva.
+## MCP Server Integration
+The backend communicates with an MCP server running on port 4000, which exposes tools for weather data retrieval and outfit recommendations.
 
-Las etapas principales del desarrollo serán:
-
-1. **Análisis del problema**
-   - Identificación de necesidades del usuario.
-   - Definición de funcionalidades del sistema.
-2. **Diseño del sistema**
-   - Definición de la arquitectura.
-   - Diseño de base de datos.
-   - Definición de flujos de automatización.
-3. **Implementación**
-   - Desarrollo del backend.
-   - Configuración de n8n.
-   - Integración con API meteorológica.
-   - Implementación de MCP.
-   - Creación de base de datos MySQL.
-4. **Pruebas**
-   - Validación del flujo completo del sistema.
-   - Verificación de recomendaciones generadas.
-5. **Documentación**
-   - Elaboración de documentación técnica del proyecto.
+### MCP Tools
+- `get_weather`: Fetches current weather for a city
+- `recommend_outfit`: Generates outfit recommendation based on temperature and conditions

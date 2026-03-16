@@ -2,7 +2,7 @@ CREATE DATABASE IF NOT EXISTS weather_assistant;
 USE weather_assistant;
 
 CREATE TABLE IF NOT EXISTS weather_queries (
-    id INT AUTO_INCREMENT PRIMARY KEY,
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
     city VARCHAR(100) NOT NULL,
     temperature DECIMAL(5,2) NOT NULL,
     weather_condition VARCHAR(100) NOT NULL,
@@ -10,10 +10,11 @@ CREATE TABLE IF NOT EXISTS weather_queries (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- Tabla opcional para usuarios futuros
 CREATE TABLE IF NOT EXISTS users (
     id INT AUTO_INCREMENT PRIMARY KEY,
     name VARCHAR(100),
     email VARCHAR(150) UNIQUE,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+
+ALTER TABLE weather_queries MODIFY COLUMN id BIGINT AUTO_INCREMENT;

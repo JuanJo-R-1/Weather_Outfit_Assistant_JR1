@@ -1,6 +1,25 @@
-## Reglas de recomendación sugeridas
+## Weather Outfit Assistant - System Design
 
-Puedes comenzar con reglas simples:
+### Arquitectura General
+El sistema sigue una arquitectura de microservicios con separación clara de responsabilidades:
+
+- **Frontend**: Interfaz de usuario simple y responsiva
+- **Backend**: API REST que orquesta las operaciones
+- **MCP Server**: Servicio especializado en consultas climáticas y recomendaciones
+- **Base de datos**: Almacenamiento persistente de historial
+
+### Flujo de Datos
+
+1. **Entrada del usuario**: Ciudad (string)
+2. **Validación**: Backend valida el formato de la ciudad
+3. **Consulta climática**: MCP Server → OpenWeather API
+4. **Procesamiento**: Aplicación de reglas de recomendación
+5. **Almacenamiento**: Guardado en base de datos
+6. **Respuesta**: JSON con clima y recomendación
+
+### Reglas de recomendación
+
+Puedes comenzar con reglas simples basadas en temperatura y condiciones:
 
 - **Menos de 10°C** → abrigo, bufanda, pantalón largo
 - **10°C a 17°C** → chaqueta o suéter
@@ -9,25 +28,30 @@ Puedes comenzar con reglas simples:
 - **Lluvia** → paraguas o impermeable
 - **Viento fuerte** → chaqueta cortavientos
 
-## MCP Server propuesto
+### Lógica de Recomendación
 
-### Herramientas
+La recomendación se genera combinando:
+- Temperatura actual
+- Condición climática (soleado, nublado, lluvia, etc.)
+- Reglas predefinidas
+- Mensajes descriptivos en español
 
-Tu servidor MCP puede exponer dos tools:
+### MCP Server Design
 
-#### 1. `get_weather`
+#### Herramientas expuestas
 
-Entrada:
+##### 1. `get_weather`
+**Propósito**: Obtener datos climáticos actuales de una ciudad
 
-```
+**Entrada:**
+```json
 {
   "city": "Bogotá"
 }
 ```
 
-Salida:
-
-```
+**Salida:**
+```json
 {
   "city": "Bogotá",
   "temperature": 14,
@@ -35,64 +59,78 @@ Salida:
 }
 ```
 
-#### 2. `recommend_outfit`
+**Implementación**:
+- Llama a OpenWeather API
+- Parsea respuesta JSON
+- Extrae temperatura y condición
+- Maneja errores de API
 
-Entrada:
+##### 2. `recommend_outfit`
+**Propósito**: Generar recomendación de vestimenta basada en clima
 
-```
+**Entrada:**
+```json
 {
   "temperature": 14,
   "condition": "Nublado"
 }
 ```
 
-Salida:
-
-```
+**Salida:**
+```json
 {
-  "recommendation": "Usa chaqueta ligera o suéter."
+  "recommendation": "Usa una chaqueta ligera y pantalones cómodos"
 }
 ```
 
-------
+**Implementación**:
+- Aplica reglas de negocio
+- Combina temperatura y condición
+- Retorna mensaje descriptivo
 
-## 
+### Base de Datos Design
 
-const temp = $json.temperature;
-const condition = ($json.condition || "").toLowerCase();
+#### Tabla: weather_queries
+```sql
+CREATE TABLE weather_queries (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    city VARCHAR(255) NOT NULL,
+    temperature DOUBLE NOT NULL,
+    condition VARCHAR(255) NOT NULL,
+    recommendation TEXT NOT NULL,
+    timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+```
 
-let recommendation = "";
+#### Consideraciones
+- ID como BIGINT para compatibilidad con JPA
+- Campos NOT NULL para integridad
+- Timestamp automático para auditoría
 
-if (temp < 10) {
-  recommendation = "Usa abrigo grueso, bufanda y pantalón largo.";
-} else if (temp >= 10 && temp < 18) {
-  recommendation = "Usa chaqueta ligera o suéter.";
-} else if (temp >= 18 && temp < 26) {
-  recommendation = "Usa ropa cómoda de media estación.";
-} else {
-  recommendation = "Usa ropa ligera y fresca.";
-}
+### Manejo de Errores
 
-if (condition.includes("rain") || condition.includes("lluvia")) {
-  recommendation += " Lleva paraguas o impermeable.";
-}
+- **Ciudad inválida**: 400 Bad Request
+- **Error de API externa**: 500 Internal Server Error con mensaje descriptivo
+- **Error de base de datos**: 500 Internal Server Error
+- **Timeout de API**: Reintento automático o mensaje de error
 
-return [{
-  json: {
-    city: $json.city,
-    temperature: temp,
-    condition: $json.condition,
-    recommendation
-  }
-}];
+### Escalabilidad
 
-### Flujo del sistema
+- **Backend**: Stateless, puede escalar horizontalmente
+- **MCP Server**: Puede cachear resultados para reducir llamadas a API externa
+- **Base de datos**: MySQL con índices apropiados
+- **Rate limiting**: Implementar límites en el backend
 
-1. El usuario ingresa una ciudad en la interfaz web.
-2. El frontend envía la solicitud al backend.
-3. El backend activa un flujo en n8n.
-4. n8n consulta una API meteorológica externa.
-5. Se procesan los datos climáticos.
-6. Se generan recomendaciones de vestimenta.
-7. La información se guarda en MySQL.
-8. El sistema devuelve la recomendación al usuario.
+### Seguridad
+
+- API keys en variables de entorno
+- Validación de entrada
+- CORS configurado para frontend
+- Logs de auditoría (sin datos sensibles)
+
+### Testing Strategy
+
+- **Unit tests**: Para lógica de recomendación y validaciones
+- **Integration tests**: Para llamadas a MCP server
+- **End-to-end tests**: Flujo completo desde frontend
+- **API tests**: Para endpoints REST

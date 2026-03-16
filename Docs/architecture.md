@@ -5,49 +5,70 @@ La arquitectura del sistema estará compuesta por varios componentes que interac
 **Frontend**
 
 - Interfaz web donde el usuario ingresa la ciudad y visualiza la recomendación.
+- Tecnologías: HTML, CSS, JavaScript
+- Puerto: 8000 (servido por backend o servidor estático)
 
 **Backend**
 
-- API que recibe las solicitudes del usuario y coordina la comunicación con otros servicios.
+- API REST que recibe las solicitudes del usuario y coordina la comunicación con otros servicios.
+- Tecnologías: Spring Boot (Java), JPA, MySQL
+- Puerto: 3002
 
-**n8n**
+**MCP Server**
 
-- Plataforma de automatización que gestiona el flujo de datos entre el sistema y la API meteorológica.
-
-**Servidor MCP**
-
-- Expone herramientas que permiten consultar el clima y generar recomendaciones de vestimenta.
+- Servidor que expone herramientas para consultar el clima y generar recomendaciones de vestimenta.
+- Tecnologías: Node.js, Express.js
+- Puerto: 4000
+- Integra con OpenWeather API
 
 **Base de datos MySQL**
 
 - Almacena el historial de consultas realizadas por los usuarios.
+- Tabla: weather_queries (id, city, temperature, condition, recommendation, timestamp)
 
 ### Flujo del sistema
 
 1. El usuario ingresa una ciudad en la interfaz web.
-2. El frontend envía la solicitud al backend.
-3. El backend activa un flujo en n8n.
-4. n8n consulta una API meteorológica externa.
-5. Se procesan los datos climáticos.
-6. Se generan recomendaciones de vestimenta.
-7. La información se guarda en MySQL.
-8. El sistema devuelve la recomendación al usuario.
+2. El frontend envía una solicitud POST al backend (/api/weather-outfit).
+3. El backend llama al MCP server para obtener datos del clima y recomendación.
+4. El MCP server consulta la API de OpenWeather para datos reales del clima.
+5. Se procesan los datos climáticos y se genera la recomendación.
+6. La información se guarda en MySQL.
+7. El backend devuelve la recomendación al frontend.
+8. El frontend muestra la recomendación al usuario.
 
+### Diagrama de arquitectura
 
-weather-outfit-assistant/
-│
-├──frontend/
-│
-│   ├──index.html
-│   ├──styles.css
-│   └── script.js
-│
-├── backend/
-│   ├── pom.xml
-│   ├── mvnw
-│   ├── mvnw.cmd
-│   │
-│   └── src/
+```
+[Frontend] <--> [Backend (Spring Boot)] <--> [MCP Server (Node.js)]
+    |              |                           |
+    |              |                           --> [OpenWeather API]
+    |              |
+    |              --> [MySQL Database]
+    |
+    --> [Usuario]
+```
+
+### Tecnologías utilizadas
+
+- **Backend**: Java 17, Spring Boot 3.2.0, Spring Web, Spring Data JPA, MySQL Connector
+- **Frontend**: HTML5, CSS3, JavaScript (ES6+)
+- **MCP Server**: Node.js, Express.js, Axios
+- **Base de datos**: MySQL 8.0
+- **API externa**: OpenWeather API
+- **Build tool**: Maven
+
+### Configuración de puertos
+
+- Backend: 3002
+- MCP Server: 4000
+- Frontend: 8000 (opcional, puede servirse desde backend)
+
+### Seguridad
+
+- API keys almacenadas en variables de entorno (.env)
+- CORS configurado para permitir solicitudes desde frontend
+- Validación de entrada en endpoints
 │       ├── main/
 │       │   ├── java/
 │       │   │   └── com/
